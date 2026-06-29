@@ -1,0 +1,11 @@
+# ==========================================
+# Environment Configurations (Security)
+# ==========================================
+# Ignore the active environment file
+.env
+
+# Ignore any local, test, or production environment overrides
+.env.*
+
+# EXCEPT the public architecture blueprint template
+!.env.example
