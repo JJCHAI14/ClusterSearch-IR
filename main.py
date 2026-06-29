@@ -1,7 +1,8 @@
+import os
 import pandas as pd
 import json
 import logging
-
+from dotenv import load_dotenv
 # Core Engine Architectural Components
 from src.crawler import read_seed_urls, crawl, save_to_json
 from src.indexer import compute_tfidf
@@ -13,6 +14,12 @@ from src.clustering import (
 )
 from src.utils import process_crawled_data, save_to_csv, save_clusters_to_csv
 
+load_dotenv()
+
+max_depth = int(os.getenv("MAX_CRAWL_DEPTH", 1))
+max_links = int(os.getenv("MAX_CRAWL_LINKS", 5000))
+max_workers = int(os.getenv("MAX_CRAWL_WORKERS", 5))
+
 
 # ======= STEP 1: Crawl website from given seed url
 seed_file = 'urlList.txt'  # Text file containing seed URLs
@@ -23,7 +30,7 @@ if not seed_urls:
     logging.error("No seed URLs found. Exiting.")
 
 # Crawl web pages
-crawled_data = crawl(seed_urls, depth=1, max_links=5000, max_workers=5)
+crawled_data = crawl(seed_urls, depth=max_depth, max_links=max_links, max_workers=max_workers)
 save_to_json(crawled_data, 'crawled_data.json')
 
 # ======= STEP 2: Process the saved url and its content =======
@@ -53,9 +60,9 @@ print(tfidf_matrix) # Output format: row refer to terms, column refer to the doc
 
 # ======= STEP 4: Perform Clustering on tf-idf =======
 
-num_clusters = 13
-tolerance = 1e-4
-max_iteration = 300
+num_clusters = int(os.getenv("NUM_CLUSTERS", 13))
+tolerance = float(os.getenv("CLUS_TOLERANCE", 1e-4))
+max_iteration = int(os.getenv("CLUS_MAX_ITERATION", 300))
 
 # Transpose to: row refer to docs, column refer to the terms [!!! Important !!!]
 tfidf_matrix_transposed = tfidf_matrix.T  # Ensure that each row is a document vector
